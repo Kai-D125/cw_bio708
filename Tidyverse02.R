@@ -24,3 +24,56 @@ df_eps<-iris_sub %>%
   ungroup() %>%
   mutate(eps = abs(Sepal.Length - mean_sl))
 
+
+# reshape -----------------------------------------------------------------
+
+## reshape to wide format
+iris_w<- iris_sub %>% 
+  mutate(id = rep(1:3, 3)) %>% # add an ID column
+  select(id, 
+         Sepal.Length, 
+         Species) %>%
+  pivot_wider(id_cols = "id", # unique row ID based on
+              values_from = "Sepal.Length", # values in each cell from
+              names_from = "Species") # new column names from
+
+print(iris_w)
+
+## reshape to long format
+iris_l<- iris_w %>%
+  pivot_longer(cols = c("setosa", 
+                        "versicolor",
+                        "virginica"),
+               names_to = "Species",
+               values_to = "Sepal.Length")
+
+# join --------------------------------------------------------------------
+
+# matching by a single column
+## left join by "Species": one to one
+df1 <- tibble(Species = c("A", "B", "C"),
+              x = c(1, 2, 3))
+
+df2 <- tibble(Species = c("A", "B", "C"),
+              y = c(4, 5, 6))
+
+df12<-left_join(x=df1,
+          y=df2,
+          by="Species")
+
+##what happens if df2 does not contain species B
+df2_minus_B <- tibble(Species = c("A", "C"),
+                      y = c(4,6))
+
+left_join(x=df1,
+                y=df2_minus_B,
+                by="Species")
+
+left_join(x=df2_minus_B,
+          y=df1,
+          by="Species")
+
+# additional resources ----------------------------------------------------
+
+#library(swirl)
+#install_course_github("sysilviakim", "swirl-tidy")
