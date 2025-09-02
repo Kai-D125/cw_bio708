@@ -28,9 +28,9 @@ df_arrange<-arrange(iris_sub, Petal.Width)
 #do excercise 1-3 at once with pipes
 #assign to 'df_master'
 df_master<-iris_sub%>%
-  filter(iris_sub, Sepal.Length > 5)%>%
-  select(iris_sub, c(Sepal.Length, Petal.Width))%>%
-  arrange(iris_sub, Petal.Width)
+  filter(Sepal.Length > 5)%>%
+  select(c(Sepal.Length, Petal.Width))%>%
+  arrange(Petal.Width)
 
 #extra
 #calculate mean Petal.Width for each species seperately
@@ -52,8 +52,8 @@ g_example<-ggplot(data = iris,
 ##with pipe
 g_example<-iris %>%
   ggplot(mapping = aes(x = Sepal.Length,
-    y = Sepal.Width) +
-      geom_point())
+    y = Sepal.Width)) +
+      geom_point()
 
 #color
 g_col<-iris %>%
