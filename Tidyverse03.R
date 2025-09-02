@@ -38,3 +38,93 @@ df_master<-iris_sub%>%
 df_mean<-iris_sub%>%
   group_by(Species)%>%
   summarize(mean_pw = mean(iris_sub))
+
+
+# ggplot ------------------------------------------------------------------
+
+#basic syntax
+##without pipe
+g_example<-ggplot(data = iris,
+       mapping = aes(x = Sepal.Length,
+                     y = Sepal.Width)) + 
+  geom_point()
+
+##with pipe
+g_example<-iris %>%
+  ggplot(mapping = aes(x = Sepal.Length,
+    y = Sepal.Width) +
+      geom_point())
+
+#color
+g_col<-iris %>%
+  ggplot(mapping = aes(x = Sepal.Length,
+                       y = Sepal.Width,
+         color = Species)) +
+  geom_point()
+
+#pitfall
+g_col<-iris %>%
+  ggplot(mapping = aes(x = Sepal.Length,
+                       y = Sepal.Width),
+         color = Species) +
+           geom_point()
+
+g_scol<-iris%>%
+  ggplot(mapping = aes(x = Sepal.Length,
+                       y = Sepal.Width)) +
+  geom_point(color = "salmon")
+
+## line plot
+df0 <- tibble(x = rep(1:50, 3),
+              y = x * 2)
+
+df0 %>%
+  ggplot(aes(x=x,
+             y=y)) +
+  geom_line()
+
+#histogram
+iris %>%
+  ggplot(aes(x = Sepal.Length)) +
+  geom_histogram()
+
+#histogram colored by Species
+iris %>%
+  ggplot(aes(x = Sepal.Length,
+             color=Species)) +
+  geom_histogram()
+
+#histogram filled by Species
+iris %>%
+  ggplot(aes(x = Sepal.Length,
+             fill=Species)) +
+  geom_histogram()
+
+#boxplot
+iris %>%
+  ggplot(aes(y = Sepal.Length,
+             x = Species)) +
+  geom_boxplot()
+
+#boxplot filled by species
+iris %>%
+  ggplot(aes(y = Sepal.Length,
+             x = Species,
+             fill = Species)) +
+  geom_boxplot()
+
+#use multiple layers
+#example 1
+iris %>%
+  ggplot(aes(y=Sepal.Length,
+             x=Species,
+             fill = Species)) +
+  geom_boxplot() +
+  geom_point()
+#example 2
+iris %>%
+  ggplot(aes(y=Sepal.Length,
+             x=Species,
+             fill = Species)) +
+  geom_boxplot() +
+  geom_jitter(alpha=0.5)
