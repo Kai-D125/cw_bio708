@@ -16,7 +16,7 @@ v_abc100<-c(rep("a", times = 20),
 # Select only the positive numbers (> 0) from `v_x`, calculate their mean, and assign it to `mu_x_plus`.
 set.seed(100)
 v_x <- rnorm(100)
-mu_x_plus<-mean(v_x > 0)
+mu_x_plus<-mean(v_x[v_x > 0])
 
 # 4: Create a numeric matrix with the numbers 1 through 9 arranged in 3 rows × 3 columns.  
 # Assign it to `m_num`.
@@ -88,17 +88,22 @@ ggplot(data = df_mtcars,
          x = f_cyl)) +
   geom_boxplot()
 
-# *16: Calculate the average car weight (`wt`) separately for each number of cylinders (`cyl`).
-mean(select(df_mtcars, f_cyl == 4))
-mean(select(df_mtcars, f_cyl == 6))
-mean(select(df_mtcars, f_cyl == 8))
+# 16: Calculate the average car weight (`wt`) separately for each number of cylinders (`cyl`).
+df_mtcars %>% 
+  group_by(cyl) %>% 
+  summarize(weight = mean(wt))
 
-# *17: Identify the heaviest car make (`wt`) among cars with 6 cylinders (`cyl`).
+# 17: Identify the heaviest car make (`wt`) among cars with 6 cylinders (`cyl`).
+df_mtcars %>%
+filter(cyl == 6) %>% 
+  arrange(wt)
 
+# 18: Create a histogram showing the distribution of 1/4 mile time (`qsec`).
+ggplot(data = df_mtcars,
+       mapping = aes(x = qsec,)) +
+  geom_histogram()
 
-# *18: Create a histogram showing the distribution of 1/4 mile time (`qsec`).
-
-# *19: The following script creates two tibbles:  
+# 19: The following script creates two tibbles:  
 # `df_length` (body length) and `df_weight` (body weight),  
 # each with a species code (`sp_code` column).  
 # Combine these two data frames based on `sp_code` and assign the result to `df_fish`.
@@ -119,5 +124,15 @@ df_length <- tibble(length = v_l,
 df_weight <- tibble(weight = v_w,
                     sp_code = v_sp)
 
+df_fish<-left_join(x = df_length,
+          y = df_weight,
+          by = "sp_code")
+
 # 20: Draw a scatter plot (point plot) of `length` vs. `weight` from `df_fish`,  
 # coloring the points by species code (`sp_code`).
+ggplot(data = df_fish,
+       mapping = aes(
+         y = length,
+         x = weight),
+       color = sp_code) +
+  geom_point()
