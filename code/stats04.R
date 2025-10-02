@@ -7,7 +7,7 @@ print(df_fl)
 
 #get unique elements from a vector
 unique(df_fl$lake)
-distinct(df_fl$lake)
+distinct(df_fl, lake)
 #unique for vector, distinct for table
 
 df_fl_mu <- df_fl %>%
