@@ -1,8 +1,9 @@
 # To complete the following exercises, you must use either base R or tidyverse functions.  
 # Manual searching or hard-coding answers will not be graded.
 
-library(tidyverse)
-
+pacman::p_load(tidyverse,
+               patchwork,
+               here)
 # sampling ----------------------------------------------------------------
 
 # GUIDE:
@@ -37,12 +38,37 @@ df_s3 %>%
 #       (Hint: initialize an empty object `mu5` before starting the loop.)
 #    This procedure will yield 100 estimates of the mean Petal.Width from 5 individuals.
 
+mu5<-NULL
+
+for (i in 1:5) {
+mu5[i] <- df_iris %>% 
+  filter(Species == "versicolor") %>% 
+  sample_n(size = 1) %>% 
+  pull(Petal.Width) %>% 
+  mean()}
+
 # 2. Calculate the standard deviation of `mu5` and assign it to `s_mu5`.
+
+s_mu5<-sd(mu5)
 
 # 3. Repeat step 1 but sample 20 individuals in each iteration, and assign the results to `mu20`.
 
+mu20<-NULL
+
+for (i in 1:20) {
+  mu20[i] <- df_iris %>% 
+    filter(Species == "versicolor") %>% 
+    sample_n(size = 1) %>% 
+    pull(Petal.Width) %>% 
+    mean()}
+
 # 4. Calculate the standard deviation of `mu20` and assign it to `s_mu20`.
+
+s_mu20<-sd(mu20)
+
 #    Verify that `s_mu20` is smaller than `s_mu5` by printing the comparison (`s_mu20 < s_mu5`)
+
+s_mu20 < s_mu5
 
 # probability density -----------------------------------------------------
 
@@ -70,10 +96,16 @@ pnorm(q = 0, mean = 0, sd = 1) # returns 0.5
 
 # Questions:
 # 1. Calculate the probability that 0 < x <= 10 for a normal distribution with mean = 5 and sd = 3.
-#    Hint: Use `qnorm()` function and subtract P(x <= 0) from P(x <= 10).
+#    Hint: Use `pnorm()` function and subtract P(x <= 0) from P(x <= 10).
+
+prob_0 <- pnorm(q = 0, mean = 5, sd = 3)
+prob_10 <- pnorm(q = 10, mean = 5, sd = 3)
+prob_10-prob_0
 
 # 2. Calculate the probability that 0 < x <= 10 for a normal distribution with mean = -5 and sd = 3.
-
+prob_0_neg <- pnorm(q = 0, mean = -5, sd = 3)
+prob_10_neg <- pnorm(q = 10, mean = -5, sd = 3)
+prob_10_neg-prob_0_neg
 # t-test ------------------------------------------------------------------
 
 # GUIDE:
@@ -86,9 +118,25 @@ pnorm(q = 0, mean = 0, sd = 1) # returns 0.5
 # 1. Using the `df_iris` dataset, calculate the variance of "Petal.Length" for each species.
 #    (Hint: use `group_by()` and `summarize()` from dplyr.)
 
+df_pl<-df_iris %>%
+  group_by(Species) %>%
+  summarize(mu_l = mean (Petal.Length),
+            var_l = var(Petal.Length),
+            n = n())
+
+df_pl
+
 # 2. Perform a t-test comparing "Petal.Length" between "setosa" and "versicolor".
 #    Choose the appropriate `var.equal` option depending on whether the SDs appear equal.
+setosa<-df_iris %>%
+  filter(Species == "setosa") %>%
+  pull(Petal.Length)
 
+versicolor<-df_iris %>%
+  filter(Species == "versicolor") %>%
+  pull(Petal.Length)
+
+t.test(setosa,versicolor, var.equal = FALSE)
 # anova -------------------------------------------------------------------
 
 # GUIDE:
@@ -103,7 +151,21 @@ df_insect <- as_tibble(InsectSprays)
 #    - Use a violin plot to show the distribution and include the median (y = count, x = spray).
 #    - Add individual data points with a small horizontal jitter for clarity.
 
+df_insect %>% 
+  ggplot(aes(x = spray,
+             y = count))+
+  geom_violin(draw_quantiles = 0.5, 
+              alpha = 0.5,
+              fill = "steelblue") + 
+  geom_jitter(alpha = 1) +
+  theme_bw()
+
 # Question:
 # 2. Using the `df_insect` dataset, perform a one-way ANOVA to test whether insect counts differ among spray types.
 #    - Use the `aov()` function and display the summary of the model with `summary()`.
 #    - Report if there was a significant difference between spray groups.
+
+insect_aov<-aov(count~spray,
+                data = df_insect)
+summary(insect_aov)
+#There is a significant difference between spray groups
