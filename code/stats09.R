@@ -73,6 +73,8 @@ pr <- sapply(X = lambda,
 df_pois <- tibble(lambda = lambda,
                   pr = pr)
 
+#raw likelihood
+
 df_pois %>% 
   ggplot(aes(x = lambda,
              y = pr))+
