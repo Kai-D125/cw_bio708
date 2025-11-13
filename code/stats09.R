@@ -30,7 +30,7 @@ df0 <- tibble(y = y,
 ggplot(df0,
        aes(y = y,
            x = x1))+
-  geom_point
+  geom_point()
 
 lm(y ~ x1,
    data = df0)
