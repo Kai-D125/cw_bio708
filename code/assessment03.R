@@ -2,7 +2,12 @@
 # Each question is worth 5 points.
 # Call suitable packages as needed.
 
-library(tidyverse)
+pacman::p_load(tidyverse,
+               patchwork,
+               janitor,
+               here,
+               stringdist,
+               MuMIn)
 
 # CO2 dataset -------------------------------------------------------------
 
@@ -24,10 +29,17 @@ head(CO2)
 # CO2 dataframe is a base dataframe. Convert this to a class `tibble`
 # then assign to `df_co2`
 
+df_co2 <- tibble(CO2)
 
 # Q2
 # Convert column names to lowercase and reassign to `df_co2`
 
+df_co2 <- df_co2 %>%
+  rename(
+    plant = Plant,
+    type = Type,
+    treatment = Treatment
+  )
 
 # Q3
 # Create scatter plots of CO₂ uptake versus ambient CO₂ concentration using `df_co2`.
@@ -36,6 +48,25 @@ head(CO2)
 # - Color the points by treatment.
 # - Create separate panels for each plant type (Quebec vs Mississippi) and combine the plots.
 
+df_q <- filter(df_co2, type == "Quebec")
+
+df_m <- filter(df_co2, type == "Mississippi")
+
+plot_q <- df_q %>% 
+  ggplot(aes(x = conc,
+             y = uptake,
+             color = treatment)) +
+  geom_point()+
+  ggtitle('Quebec')
+
+plot_m <- df_m %>% 
+  ggplot(aes(x = conc,
+             y = uptake,
+             color = treatment)) +
+  geom_point()+
+  ggtitle('Mississipi')
+
+plot_q / plot_m
 
 # Q4
 # The df_co2 dataset contains the following variables:
@@ -52,6 +83,11 @@ head(CO2)
 # 
 # Fit these models separately for each plant origin.
 
+lm_m <- lm(uptake ~ conc * treatment, data = df_m)
+lm_q <- lm(uptake ~ conc * treatment, data = df_q)
+
+summary(lm_m)
+summary(lm_q)
 
 # Q5
 # Based on the models fitted in Q4 for Quebec and Mississippi plants,
@@ -62,6 +98,12 @@ head(CO2)
 
 # ENTER YOUR ANSWER HERE as COMMENT:
 # (no coding required for this question)
+# While there was a relationship between all variables in the Mississippi samples,
+# the atmospheric co2 was far more significant than the rest.
+# This is supported by the Quebec samples, where only co2 concentration is significantly related,
+# showing that the main driver of co2 uptake in this experiment was the ambient co2 concentration.
+# However, Mississippi samples could be more sensitive to temperature than ones from Quebec,
+# perhaps reflecting a genetic tolerance to cold present within populations in Quebec.
 
 
 # BCI data ----------------------------------------------------------------
@@ -72,7 +114,7 @@ head(CO2)
 # run the following code to get data.
 if(!require(vegan)) install.packages("vegan")
 library(vegan)
-data("BCI")
+ data("BCI")
 data("BCI.env")
 
 # BCI dataset:
@@ -129,12 +171,35 @@ df_env <- BCI.env %>%
 # Q6
 # Convert column names of `df_env` to lowercase and reassign to `df_env`
 
+df_env <- df_env %>%
+  rename(
+    utm.ew = UTM.EW,
+    utm.ns = UTM.NS,
+    precipitation = Precipitation,
+    elevation = Elevation,
+    age.cat = Age.cat,
+    geology = Geology,
+    habitat = Habitat,
+    stream = Stream,
+    envhet = EnvHet
+  )
 
 # Q7
 # In `df_env`, some environmental variables have no variation between plots
 # (i.e., the same value for all plots). Identify these columns and remove them
 # from the dataframe. Assign the resulting dataframe to `df_env_sub`.
 
+unique(df_env$utm.ew)
+unique(df_env$utm.ns)
+unique(df_env$precipitation)
+unique(df_env$elevation)
+unique(df_env$age.cat)
+unique(df_env$geology)
+unique(df_env$habitat)
+unique(df_env$stream)
+unique(df_env$envhet)
+
+df_env_sub <- select(df_env, -c(precipitation, elevation, geology))
 
 # Q8
 # Calculate summary statistics for each plot using `df_bci`.
@@ -144,12 +209,22 @@ df_env <- BCI.env %>%
 # - p: proportion of the most abundant species (n1 / n_sum)
 # Assign the resulting dataframe to `df_n`.
 
+unique(df_bci$plot)
+
+df_n <- df_bci %>% 
+  group_by(plot) %>% 
+  mutate(n_sum = sum(count), 
+            n1 = max(count, na.rm = TRUE),
+         p = n1 / n_sum) 
 
 # Q9
 # Combine the summary data (`df_n`) with the environmental variables
 # (`df_env_sub`) for each plot. Assign the resulting dataframe to `df_m`.
 
-
+df_m <- left_join(x = tibble(df_n),
+                  y = tibble(df_env_sub),
+                  by = "plot")
+  
 # Q10
 # Develop a statistical model to explain variation in the proportion of the dominant
 # species in each plot. Use `EnvHet`, `Stream`, and `Habitat` as predictors.
@@ -158,3 +233,15 @@ df_env <- BCI.env %>%
 # rather than the goodness of fit, and report which variables are included in 
 # the best predictive model as a comment.
 
+var(df_m$p)
+mean(df_m$p)
+
+#p_mod <- glmmTMB::glmmTMB(p ~ envhet + stream + habitat,
+               #data = df_m,
+             #family = beta_family(link="logit"))
+#summary(p_mod)
+#I have made the above code into a comment, as I am having trouble with the
+#syntax of the beta family
+
+#Since the proportion was a continuous variable with an upper bound of 1
+#and a lower bound of 0, beta distribution makes the most sense for the model
